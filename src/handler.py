@@ -4,7 +4,6 @@ from utils import JobInput
 
 _vllm_engine = None
 _openai_engine = None
-
 def init_engines():
     global _vllm_engine, _openai_engine
     if _vllm_engine is None:
