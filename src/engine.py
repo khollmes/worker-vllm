@@ -54,9 +54,11 @@ class vLLMEngine:
             try:
                 from transformers import AutoTokenizer
                 tokenizer = AutoTokenizer.from_pretrained(
-                    self.engine_args.tokenizer or self.engine_args.model,
+                    model_id,
                     revision=self.engine_args.tokenizer_revision or "main",
-                    trust_remote_code=self.engine_args.trust_remote_code
+                    trust_remote_code=self.engine_args.trust_remote_code,
+                    use_fast=False,
+                    fix_mistral_regex=True,
                 )
                 # Create a minimal wrapper
                 class MinimalTokenizerWrapper:
