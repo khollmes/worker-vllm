@@ -91,31 +91,28 @@ class vLLMEngine:
 
     def dynamic_batch_size(self, current_batch_size, batch_size_growth_factor):
         return min(current_batch_size*batch_size_growth_factor, self.default_batch_size)
-                           
-    async def generate(self, openai_request: JobInput):
-        await self._ensure_initialized()
-    
-        if openai_request.openai_route == "/v1/models":
-            yield await self._handle_model_request()
-        elif openai_request.openai_route in ["/v1/chat/completions", "/v1/completions"]:
-            async for response in self._handle_chat_or_completion_request(openai_request):
-                yield response
-        else:
-            yield create_error_response("Invalid route").model_dump()
-        try:
-            async for batch in self._generate_vllm(
-                llm_input=job_input.llm_input,
-                validated_sampling_params=job_input.sampling_params,
-                batch_size=job_input.max_batch_size,
-                stream=job_input.stream,
-                apply_chat_template=job_input.apply_chat_template,
-                request_id=job_input.request_id,
-                batch_size_growth_factor=job_input.batch_size_growth_factor,
-                min_batch_size=job_input.min_batch_size
-            ):
-                yield batch
-        except Exception as e:
-            yield {"error": create_error_response(str(e)).model_dump()}
+
+    async def _ensure_initialized(self):
+        return
+        
+    async def generate(self, job_input: JobInput):
+    # For the "native" route (non-OpenAI)
+    await self._ensure_initialized()
+
+    try:
+        async for batch in self._generate_vllm(
+            llm_input=job_input.llm_input,
+            validated_sampling_params=job_input.sampling_params,
+            batch_size=job_input.max_batch_size,
+            stream=job_input.stream,
+            apply_chat_template=job_input.apply_chat_template,
+            request_id=job_input.request_id,
+            batch_size_growth_factor=job_input.batch_size_growth_factor,
+            min_batch_size=job_input.min_batch_size,
+        ):
+            yield batch
+    except Exception as e:
+        yield {"error": create_error_response(str(e)).model_dump()}
 
     async def _generate_vllm(self, llm_input, validated_sampling_params, batch_size, stream, apply_chat_template, request_id, batch_size_growth_factor, min_batch_size: str) -> AsyncGenerator[dict, None]:
         if apply_chat_template or isinstance(llm_input, list):
