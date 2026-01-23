@@ -92,7 +92,16 @@ class vLLMEngine:
     def dynamic_batch_size(self, current_batch_size, batch_size_growth_factor):
         return min(current_batch_size*batch_size_growth_factor, self.default_batch_size)
                            
-    async def generate(self, job_input: JobInput):
+    async def generate(self, openai_request: JobInput):
+        await self._ensure_initialized()
+    
+        if openai_request.openai_route == "/v1/models":
+            yield await self._handle_model_request()
+        elif openai_request.openai_route in ["/v1/chat/completions", "/v1/completions"]:
+            async for response in self._handle_chat_or_completion_request(openai_request):
+                yield response
+        else:
+            yield create_error_response("Invalid route").model_dump()
         try:
             async for batch in self._generate_vllm(
                 llm_input=job_input.llm_input,
