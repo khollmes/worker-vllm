@@ -1,3 +1,4 @@
+import os
 import runpod
 from utils import JobInput
 
@@ -20,10 +21,9 @@ async def handler(job):
 
     async for batch in engine.generate(job_input):
         yield batch
-
+        
 def concurrency_modifier(_current_concurrency: int):
-    init_engines()
-    return _vllm_engine.max_concurrency
+    return int(os.getenv("MAX_CONCURRENCY", "1"))
 
 if __name__ == "__main__":
     runpod.serverless.start(
