@@ -261,6 +261,8 @@ class OpenAIvLLMEngine(vLLMEngine):
         )
     
     async def generate(self, openai_request: JobInput):
+        await self._ensure_initialized()
+    
         if openai_request.openai_route == "/v1/models":
             yield await self._handle_model_request()
         elif openai_request.openai_route in ["/v1/chat/completions", "/v1/completions"]:
@@ -268,7 +270,7 @@ class OpenAIvLLMEngine(vLLMEngine):
                 yield response
         else:
             yield create_error_response("Invalid route").model_dump()
-    
+
     async def _handle_model_request(self):
         models = await self.serving_models.show_available_models()
         return models.model_dump()
