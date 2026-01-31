@@ -9,16 +9,14 @@ pydantic
 pydantic-settings
 hf-transfer
 
-# --- pins to avoid yanked/breaking versions ---
-transformers>=4.57.6
+# --- vLLM-safe Transformers band (avoid v5) ---
+transformers>=4.58.0,<5.0.0
 tokenizers>=0.21.0,<0.22.0
-# ---------------------------------------------
 
-# --- required for Ministral-3 family configs/tokenizers ---
+# --- required for Ministral / Mistral3 configs & tokenizer stack ---
 mistral-common>=1.8.6
 sentencepiece
 accelerate>=0.27.0
-# --------------------------------------------------------
 
 bitsandbytes>=0.45.0
 kernels
