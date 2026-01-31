@@ -9,12 +9,12 @@ pydantic
 pydantic-settings
 hf-transfer
 
-# --- critical pins for vLLM compatibility ---
+# --- pins to avoid yanked/breaking versions ---
 transformers>=4.58.0,<5.0.0
 tokenizers>=0.21.0,<0.22.0
-# -------------------------------------------
+# ---------------------------------------------
 
-# --- needed for Ministral / Mistral tokenizers & configs ---
+# --- required for Ministral-3 family configs/tokenizers ---
 mistral-common>=1.8.6
 sentencepiece
 accelerate>=0.27.0
