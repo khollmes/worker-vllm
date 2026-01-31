@@ -10,7 +10,7 @@ pydantic-settings
 hf-transfer
 
 # --- vLLM-safe Transformers band (avoid v5) ---
-transformers>=5.0.0
+transformers==5.0.0rc0
 tokenizers>=0.22.0,<0.23.0
 
 # --- required for Ministral / Mistral3 configs & tokenizer stack ---
