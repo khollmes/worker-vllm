@@ -53,6 +53,7 @@ class vLLMEngine:
             # This is a fallback - ideally chat templates should be handled by vLLM directly
             try:
                 from transformers import AutoTokenizer
+                model_id = self.engine_args.tokenizer or self.engine_args.model
                 tokenizer = AutoTokenizer.from_pretrained(
                     model_id,
                     revision=self.engine_args.tokenizer_revision or "main",
@@ -188,7 +189,7 @@ class OpenAIvLLMEngine(vLLMEngine):
         self.lora_adapters = self._load_lora_adapters()
         self._init_task = None
         self._init_lock = asyncio.Lock()
-
+        
         raw_output_env = os.getenv("RAW_OPENAI_OUTPUT", "1")
         if raw_output_env.lower() in ("true", "false"):
             self.raw_openai_output = raw_output_env.lower() == "true"
@@ -217,9 +218,26 @@ class OpenAIvLLMEngine(vLLMEngine):
                 logging.info(f"---Initialized adapter not worked: {e}")
                 continue
         return adapters
+        
+    async def _get_model_config_compat(self):
+        # v0: AsyncLLMEngine has async get_model_config()
+        if hasattr(self.llm, "get_model_config") and callable(getattr(self.llm, "get_model_config")):
+            return await self.llm.get_model_config()
+    
+        # v1: AsyncLLM exposes model_config as an attribute in newer releases
+        if hasattr(self.llm, "model_config"):
+            return self.llm.model_config
+    
+        # last resort: some builds expose vllm_config containing model_config
+        if hasattr(self.llm, "get_vllm_config") and callable(getattr(self.llm, "get_vllm_config")):
+            vcfg = await self.llm.get_vllm_config()
+            if hasattr(vcfg, "model_config"):
+                return vcfg.model_config
+    
+        raise AttributeError(f"Can't obtain model_config from llm type={type(self.llm)}")
 
     async def _initialize_engines(self):
-        self.model_config = await self.llm.get_model_config()
+        self.model_config = await self._get_model_config_compat()
         self.base_model_paths = [
             BaseModelPath(name=self.engine_args.model, model_path=self.engine_args.model)
         ]
