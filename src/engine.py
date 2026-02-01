@@ -270,7 +270,6 @@ class OpenAIvLLMEngine(vLLMEngine):
         )
         self.completion_engine = OpenAIServingCompletion(
             engine_client=self.llm, 
-            model_config=self.model_config,
             models=self.serving_models,
             request_logger=None,
             # return_token_as_token_ids=False,
