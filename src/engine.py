@@ -244,7 +244,6 @@ class OpenAIvLLMEngine(vLLMEngine):
 
         self.serving_models = OpenAIServingModels(
             engine_client=self.llm,
-            model_config=self.model_config,
             base_model_paths=self.base_model_paths,
             lora_modules=self.lora_adapters,
         )
