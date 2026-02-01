@@ -256,7 +256,6 @@ class OpenAIvLLMEngine(vLLMEngine):
         
         self.chat_engine = OpenAIServingChat(
             engine_client=self.llm, 
-            model_config=self.model_config,
             models=self.serving_models,
             response_role=self.response_role,
             request_logger=None,
